@@ -1,6 +1,6 @@
 import { ArrowRight, CheckCircle, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import heroImage from "@/assets/hero-procurement.jpg";
+import Image from "next/image";
 
 const Hero = () => {
   return (
@@ -56,10 +56,13 @@ const Hero = () => {
 
           <div className="relative">
             <div className="bg-gradient-card rounded-2xl shadow-lg overflow-hidden">
-              <img 
-                src={heroImage} 
+              <Image 
+                src="/hero-procurement.jpg" 
                 alt="ProcureFlow Dashboard"
                 className="w-full h-auto object-cover"
+                width={600}
+                height={400}
+                priority
               />
             </div>
           </div>

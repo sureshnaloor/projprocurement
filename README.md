@@ -1,73 +1,102 @@
-# Welcome to your Lovable project
+# ProcureFlow - Project Procurement Management
 
-## Project info
+A modern procurement management application built with Next.js, designed to streamline project-wise purchases, track budgets, and manage purchase requisitions.
 
-**URL**: https://lovable.dev/projects/b5a3ea46-48c8-44c5-8f33-b7b26bd2c6ea
+## Features
 
-## How can I edit this code?
+- **Project Management**: Track multiple projects with individual budgets
+- **Purchase Requisitions**: Create and manage PRs with approval workflows
+- **Budget Tracking**: Monitor spending against approved budgets
+- **Material Management**: Track materials across different projects
+- **Real-time Dashboard**: Comprehensive overview of procurement status
+- **Modern UI**: Built with Shadcn/UI and Tailwind CSS
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Shadcn/UI
+- **Icons**: Lucide React
+- **State Management**: React Query (TanStack Query)
+- **Forms**: React Hook Form with Zod validation
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b5a3ea46-48c8-44c5-8f33-b7b26bd2c6ea) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 18+ 
+- npm or yarn
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# Clone the repository
+git clone <YOUR_REPO_URL>
 
-Follow these steps:
+# Navigate to the project directory
+cd projectprocure
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:3000`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+```
+├── app/                    # Next.js App Router
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Home page
+│   ├── dashboard/         # Dashboard pages
+│   └── globals.css        # Global styles
+├── components/            # React components
+│   ├── ui/               # Shadcn/UI components
+│   ├── Header.tsx        # Navigation header
+│   ├── Hero.tsx          # Landing page hero
+│   ├── Features.tsx      # Features section
+│   └── Dashboard.tsx     # Main dashboard
+├── hooks/                # Custom React hooks
+├── lib/                  # Utility functions
+└── public/               # Static assets
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Development
 
-## What technologies are used for this project?
+```bash
+# Development server
+npm run dev
 
-This project is built with:
+# Build for production
+npm run build
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Start production server
+npm start
 
-## How can I deploy this project?
+# Lint code
+npm run lint
+```
 
-Simply open [Lovable](https://lovable.dev/projects/b5a3ea46-48c8-44c5-8f33-b7b26bd2c6ea) and click on Share -> Publish.
+## Deployment
 
-## Can I connect a custom domain to my Lovable project?
+This project can be deployed to various platforms:
 
-Yes, you can!
+- **Vercel** (recommended for Next.js)
+- **Netlify**
+- **Railway**
+- **AWS Amplify**
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Contributing
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.

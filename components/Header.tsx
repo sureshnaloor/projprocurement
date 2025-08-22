@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 const Header = () => {
   return (
@@ -21,12 +22,12 @@ const Header = () => {
           </div>
           
           <nav className="hidden md:flex items-center space-x-6">
-            <a href="/" className="text-foreground hover:text-primary transition-smooth">
+            <Link href="/" className="text-foreground hover:text-primary transition-smooth">
               Home
-            </a>
-            <a href="/dashboard" className="text-foreground hover:text-primary transition-smooth">
+            </Link>
+            <Link href="/dashboard" className="text-foreground hover:text-primary transition-smooth">
               Dashboard
-            </a>
+            </Link>
             <a href="#features" className="text-foreground hover:text-primary transition-smooth">
               Features
             </a>

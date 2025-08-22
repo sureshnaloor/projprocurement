@@ -3,8 +3,9 @@ import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
-const Index = () => {
+export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -21,11 +22,13 @@ const Index = () => {
             Join hundreds of project managers who trust ProcureFlow for their procurement needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="secondary" size="lg" className="group" onClick={() => window.location.href = '/dashboard'}>
-              Go to Dashboard
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-smooth" />
+            <Button variant="secondary" size="lg" className="group" asChild>
+              <Link href="/dashboard">
+                Go to Dashboard
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-smooth" />
+              </Link>
             </Button>
-            <Button variant="outline" size="lg" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+            <Button variant="outline" size="lg" className="border-white text-black hover:bg-white hover:text-primary">
               Contact Sales
             </Button>
           </div>
@@ -44,6 +47,4 @@ const Index = () => {
       </footer>
     </div>
   );
-};
-
-export default Index;
+}
