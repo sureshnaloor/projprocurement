@@ -174,125 +174,123 @@ export default function PRList() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Purchase Requisitions</CardTitle>
-              <CardDescription>
-                Manage and track all purchase requisitions
-              </CardDescription>
-            </div>
-            <Button onClick={() => setIsFormOpen(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              New PR
-            </Button>
+      {/* Header and Search Section with darker background */}
+      <div className="bg-stone-50 rounded-lg p-6 mb-6 shadow-sm border border-stone-200">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-stone-800">Purchase Requisitions</h1>
+            <p className="text-sm text-stone-600 font-medium">Manage and track all purchase requisitions</p>
           </div>
-        </CardHeader>
-        <CardContent>
-          {/* Search */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by project name, PR number, or description..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-          </div>
+          <Button onClick={() => setIsFormOpen(true)} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Plus className="mr-2 h-4 w-4" />
+            New PR
+          </Button>
+        </div>
 
-          {/* Table */}
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>PR Number</TableHead>
-                    <TableHead>Project</TableHead>
-                    <TableHead>Material/Service</TableHead>
-                    <TableHead>PR Value (SAR)</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 h-4 w-4" />
+          <Input
+            placeholder="Search by project name, PR number, or description..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 text-sm bg-white border-stone-300 focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      {/* Table Section */}
+      <div className="bg-white rounded-lg shadow border border-stone-200">
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-stone-50">
+                <TableHead className="text-xs font-medium text-stone-700">PR Number</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Project</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Material/Service</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">PR Value (SAR)</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Status</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Created</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700 w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPRs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-stone-500 text-sm">
+                    {searchTerm ? 'No purchase requisitions found matching your search' : 'No purchase requisitions found'}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredPRs.map((pr) => (
+                  <TableRow key={pr._id} className="hover:bg-stone-50 transition-colors duration-200">
+                    <TableCell className="text-xs py-3 text-stone-700 font-medium">
+                      {pr.prNumber}-{pr.lineItemNumber}
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div>
+                        <div className="text-xs font-medium text-stone-700">{pr.projectName}</div>
+                        <div className="text-xs text-stone-500">
+                          {pr.projectWbs}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div>
+                        <div className="text-xs font-medium text-stone-700">{pr.materialService}</div>
+                        <div className="text-xs text-stone-500">
+                          {pr.materialServiceWbs}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs py-3 text-stone-700 font-medium">
+                      {pr.prValue.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="py-3">
+                      {getStatusBadge(pr)}
+                    </TableCell>
+                    <TableCell className="text-xs py-3 text-stone-600">
+                      {new Date(pr.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleView(pr)}
+                          className="h-7 w-7 p-0 border-stone-300 hover:border-blue-500 hover:bg-blue-50"
+                        >
+                          <Eye className="h-3 w-3 text-stone-600 hover:text-blue-600" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(pr)}
+                          className="h-7 w-7 p-0 border-stone-300 hover:border-green-500 hover:bg-green-50"
+                        >
+                          <Edit className="h-3 w-3 text-stone-600 hover:text-green-600" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(pr._id)}
+                          className="h-7 w-7 p-0 border-stone-300 hover:border-red-500 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3 w-3 text-stone-600 hover:text-red-600" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPRs.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">
-                        No purchase requisitions found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredPRs.map((pr) => (
-                      <TableRow key={pr._id}>
-                        <TableCell className="font-medium">
-                          {pr.prNumber}-{pr.lineItemNumber}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{pr.projectName}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {pr.projectWbs}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{pr.materialService}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {pr.materialServiceWbs}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {pr.prValue.toLocaleString()}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(pr)}</TableCell>
-                        <TableCell>
-                          {new Date(pr.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleView(pr)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEdit(pr)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(pr._id)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        )}
+      </div>
 
       {/* PR Form Dialog */}
       <PRForm

@@ -213,154 +213,156 @@ export default function BudgetedValuesPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Budgeted Values</h1>
-          <Button onClick={handleCreate} size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            New Budgeted Value
-          </Button>
-        </div>
+        {/* Header and Search Section with darker background */}
+        <div className="bg-stone-50 rounded-lg p-6 mb-6 shadow-sm border border-stone-200">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold text-stone-800">Budgeted Values</h1>
+            <Button onClick={handleCreate} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Plus className="mr-2 h-4 w-4" />
+              New Budgeted Value
+            </Button>
+          </div>
 
-        {/* Search Bar */}
-        <div className="mb-4">
+          {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 h-4 w-4" />
             <Input
               placeholder="Search by project name, WBS, material/service, or remarks..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 text-sm"
+              className="pl-10 text-sm bg-white border-stone-300 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
         </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-xs font-medium">Project Name</TableHead>
-              <TableHead className="text-xs font-medium">Project WBS</TableHead>
-              <TableHead className="text-xs font-medium">Material/Service WBS</TableHead>
-              <TableHead className="text-xs font-medium">Material/Service</TableHead>
-              <TableHead className="text-xs font-medium">Quantity</TableHead>
-              <TableHead className="text-xs font-medium">Unit</TableHead>
-              <TableHead className="text-xs font-medium">Budgeted Value (SAR)</TableHead>
-              <TableHead className="text-xs font-medium">Progress</TableHead>
-              <TableHead className="text-xs font-medium">Remarks</TableHead>
-              <TableHead className="text-xs font-medium">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredBudgetedValues.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={10} className="text-center py-6 text-gray-500 text-sm">
-                  {searchTerm ? 'No budgeted values found matching your search' : 'No budgeted values found'}
-                </TableCell>
+        {/* Table Section */}
+        <div className="bg-white rounded-lg shadow border border-stone-200">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-stone-50">
+                <TableHead className="text-xs font-medium text-stone-700">Project Name</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Project WBS</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Material/Service WBS</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Material/Service</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Quantity</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Unit</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Budgeted Value (SAR)</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Progress</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Remarks</TableHead>
+                <TableHead className="text-xs font-medium text-stone-700">Actions</TableHead>
               </TableRow>
-            ) : (
-              filteredBudgetedValues.map((value) => (
-                <TableRow key={value._id}>
-                  <TableCell className="text-xs py-2">{value.projectName}</TableCell>
-                  <TableCell className="text-xs py-2">{value.projectWbs}</TableCell>
-                  <TableCell className="text-xs py-2">{value.materialServiceWbs}</TableCell>
-                  <TableCell className="text-xs py-2">{value.materialService}</TableCell>
-                  <TableCell className="text-xs py-2">{value.quantity}</TableCell>
-                  <TableCell className="text-xs py-2">{value.unitOfMeasure}</TableCell>
-                  <TableCell className="text-xs py-2">{value.budgetedValue.toLocaleString()}</TableCell>
-                  <TableCell className="py-2">
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>Budget: <span className={((value.totalPRValue || 0) / value.budgetedValue * 100) > 100 ? 'text-red-600 font-semibold' : ''}>{((value.totalPRValue || 0) / value.budgetedValue * 100).toFixed(1)}%</span></span>
-                        <span>{(value.totalPRValue || 0).toLocaleString()} / {value.budgetedValue.toLocaleString()}</span>
-                      </div>
-                      <div className="relative w-full bg-gray-200 rounded-full h-1.5">
-                        <div 
-                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" 
-                          style={{ width: `${Math.min(((value.totalPRValue || 0) / value.budgetedValue * 100), 100)}%` }}
-                        ></div>
-                        {((value.totalPRValue || 0) / value.budgetedValue * 100) > 100 && (
-                          <div 
-                            className="bg-red-500 h-1.5 rounded-full absolute top-0 transition-all duration-300" 
-                            style={{ 
-                              left: '100%', 
-                              width: `${Math.max(((value.totalPRValue || 0) / value.budgetedValue * 100) - 100, 0)}%`,
-                              maxWidth: 'calc(100% - 100%)'
-                            }}
-                          ></div>
-                        )}
-                      </div>
-                      <div className="flex justify-between text-xs">
-                        <span>PO: <span className={((value.totalPOValue || 0) / value.budgetedValue * 100) > 100 ? 'text-red-600 font-semibold' : ''}>{((value.totalPOValue || 0) / value.budgetedValue * 100).toFixed(1)}%</span></span>
-                        <span>{(value.totalPOValue || 0).toLocaleString()} / {value.budgetedValue.toLocaleString()}</span>
-                      </div>
-                      <div className="relative w-full bg-gray-200 rounded-full h-1.5">
-                        <div 
-                          className="bg-green-600 h-1.5 rounded-full transition-all duration-300" 
-                          style={{ width: `${Math.min(((value.totalPOValue || 0) / value.budgetedValue * 100), 100)}%` }}
-                        ></div>
-                        {((value.totalPOValue || 0) / value.budgetedValue * 100) > 100 && (
-                          <div 
-                            className="bg-red-500 h-1.5 rounded-full absolute top-0 transition-all duration-300" 
-                            style={{ 
-                              left: '100%', 
-                              width: `${Math.max(((value.totalPOValue || 0) / value.budgetedValue * 100) - 100, 0)}%`,
-                              maxWidth: 'calc(100% - 100%)'
-                            }}
-                          ></div>
-                        )}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate text-xs py-2">
-                    {value.remarks}
-                  </TableCell>
-                  <TableCell className="py-2">
-                    <div className="flex gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(value)}
-                        className="h-7 w-7 p-0"
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCreatePR(value)}
-                        className="h-7 w-7 p-0"
-                      >
-                        <FileText className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewPRs(value)}
-                        className="h-7 w-7 p-0"
-                      >
-                        <Eye className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(value._id)}
-                        disabled={isDeleting === value._id}
-                        className="h-7 w-7 p-0"
-                      >
-                        {isDeleting === value._id ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-3 w-3" />
-                        )}
-                      </Button>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {filteredBudgetedValues.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={10} className="text-center py-8 text-stone-500 text-sm">
+                    {searchTerm ? 'No budgeted values found matching your search' : 'No budgeted values found'}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ) : (
+                filteredBudgetedValues.map((value) => (
+                  <TableRow key={value._id} className="hover:bg-stone-50 transition-colors duration-200">
+                    <TableCell className="text-xs py-3 text-stone-700">{value.projectName}</TableCell>
+                    <TableCell className="text-xs py-3 text-stone-700">{value.projectWbs}</TableCell>
+                    <TableCell className="text-xs py-3 text-stone-700">{value.materialServiceWbs}</TableCell>
+                    <TableCell className="text-xs py-3 text-stone-700">{value.materialService}</TableCell>
+                    <TableCell className="text-xs py-3 text-stone-700">{value.quantity}</TableCell>
+                    <TableCell className="text-xs py-3 text-stone-700">{value.unitOfMeasure}</TableCell>
+                    <TableCell className="text-xs py-3 text-stone-700 font-medium">{value.budgetedValue.toLocaleString()}</TableCell>
+                    <TableCell className="py-3">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-stone-600">Budget: <span className={((value.totalPRValue || 0) / value.budgetedValue * 100) > 100 ? 'text-red-600 font-semibold' : 'text-blue-600 font-medium'}>{((value.totalPRValue || 0) / value.budgetedValue * 100).toFixed(1)}%</span></span>
+                          <span className="text-stone-500">{(value.totalPRValue || 0).toLocaleString()} / {value.budgetedValue.toLocaleString()}</span>
+                        </div>
+                        <div className="relative w-full bg-stone-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${Math.min(((value.totalPRValue || 0) / value.budgetedValue * 100), 100)}%` }}
+                          ></div>
+                          {((value.totalPRValue || 0) / value.budgetedValue * 100) > 100 && (
+                            <div 
+                              className="bg-red-500 h-2 rounded-full absolute top-0 transition-all duration-300" 
+                              style={{ 
+                                left: '100%', 
+                                width: `${Math.max(((value.totalPRValue || 0) / value.budgetedValue * 100) - 100, 0)}%`,
+                                maxWidth: 'calc(100% - 100%)'
+                              }}
+                            ></div>
+                          )}
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-stone-600">PO: <span className={((value.totalPOValue || 0) / value.budgetedValue * 100) > 100 ? 'text-red-600 font-semibold' : 'text-green-600 font-medium'}>{((value.totalPOValue || 0) / value.budgetedValue * 100).toFixed(1)}%</span></span>
+                          <span className="text-stone-500">{(value.totalPOValue || 0).toLocaleString()} / {value.budgetedValue.toLocaleString()}</span>
+                        </div>
+                        <div className="relative w-full bg-stone-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${Math.min(((value.totalPOValue || 0) / value.budgetedValue * 100), 100)}%` }}
+                          ></div>
+                          {((value.totalPOValue || 0) / value.budgetedValue * 100) > 100 && (
+                            <div 
+                              className="bg-red-500 h-2 rounded-full absolute top-0 transition-all duration-300" 
+                              style={{ 
+                                left: '100%', 
+                                width: `${Math.max(((value.totalPOValue || 0) / value.budgetedValue * 100) - 100, 0)}%`,
+                                maxWidth: 'calc(100% - 100%)'
+                              }}
+                            ></div>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate text-xs py-3 text-stone-600">
+                      {value.remarks}
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(value)}
+                          className="h-7 w-7 p-0 border-stone-300 hover:border-blue-500 hover:bg-blue-50"
+                        >
+                          <Edit className="h-3 w-3 text-stone-600 hover:text-blue-600" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCreatePR(value)}
+                          className="h-7 w-7 p-0 border-stone-300 hover:border-green-500 hover:bg-green-50"
+                        >
+                          <FileText className="h-3 w-3 text-stone-600 hover:text-green-600" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewPRs(value)}
+                          className="h-7 w-7 p-0 border-stone-300 hover:border-purple-500 hover:bg-purple-50"
+                        >
+                          <Eye className="h-3 w-3 text-stone-600 hover:text-purple-600" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(value._id)}
+                          disabled={isDeleting === value._id}
+                          className="h-7 w-7 p-0 border-stone-300 hover:border-red-500 hover:bg-red-50"
+                        >
+                          {isDeleting === value._id ? (
+                            <Loader2 className="h-3 w-3 animate-spin text-stone-600" />
+                          ) : (
+                            <Trash2 className="h-3 w-3 text-stone-600 hover:text-red-600" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
 
              <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
