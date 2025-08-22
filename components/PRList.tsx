@@ -38,6 +38,7 @@ import {
 } from 'lucide-react'
 import PRForm from './PRForm'
 import PRDetails from './PRDetails'
+import Header from './Header'
 
 interface PurchaseRequisition {
   _id: string
@@ -174,6 +175,7 @@ export default function PRList() {
 
   return (
     <div className="space-y-6">
+      <Header />
       {/* Header and Search Section with darker background */}
       <div className="bg-stone-50 rounded-lg p-6 mb-6 shadow-sm border border-stone-200">
         <div className="flex items-center justify-between mb-4">

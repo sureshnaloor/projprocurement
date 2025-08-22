@@ -1,13 +1,14 @@
+import ProtectedRoute from '@/components/ProtectedRoute'
 import PRList from '@/components/PRList'
-import Header from '@/components/Header'
 
-export default function PurchaseRequisitionsPage() {
+export default function PurchaseRequisitions() {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container mx-auto py-6">
-        <PRList />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto py-6">
+          <PRList />
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   )
 }
