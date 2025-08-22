@@ -31,6 +31,9 @@ const Header = () => {
             <Link href="/purchase-requisitions" className="text-foreground hover:text-primary transition-smooth">
               Purchase Requisitions
             </Link>
+            <Link href="/budgeted-values" className="text-foreground hover:text-primary transition-smooth">
+              Budgeted Values
+            </Link>
             <a href="#features" className="text-foreground hover:text-primary transition-smooth">
               Features
             </a>
