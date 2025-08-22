@@ -131,7 +131,7 @@ const Dashboard = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="hero">
+            <Button variant="hero" onClick={() => window.location.href = '/purchase-requisitions'}>
               <Plus className="h-4 w-4 mr-2" />
               New PR
             </Button>
@@ -247,7 +247,7 @@ const Dashboard = () => {
                 <CardTitle className="text-foreground">Purchase Requisitions</CardTitle>
                 <CardDescription>Track PR status, PO generation, and delivery dates</CardDescription>
               </div>
-              <Button variant="hero">
+              <Button variant="hero" onClick={() => window.location.href = '/purchase-requisitions'}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create PR
               </Button>
