@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongoose'
 import PurchaseRequisition from '@/lib/models/PurchaseRequisition'
+import { ObjectId } from 'mongodb'
 
 // GET - Fetch all purchase requisitions
 export async function GET(request: NextRequest) {
@@ -10,6 +11,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const projectName = searchParams.get('projectName')
     const prNumber = searchParams.get('prNumber')
+    const budgetedValueId = searchParams.get('budgetedValueId')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
     
@@ -20,6 +22,9 @@ export async function GET(request: NextRequest) {
     }
     if (prNumber) {
       filter.prNumber = { $regex: prNumber, $options: 'i' }
+    }
+    if (budgetedValueId) {
+      filter.budgetedValueId = new ObjectId(budgetedValueId)
     }
     
     // Calculate skip value for pagination
@@ -60,6 +65,16 @@ export async function POST(request: NextRequest) {
     await dbConnect()
     
     const body = await request.json()
+    
+    // Convert budgetedValueId to ObjectId if provided
+    if (body.budgetedValueId) {
+      body.budgetedValueId = new ObjectId(body.budgetedValueId)
+    }
+    
+    // Business rule: When PO is created, PR value should equal PO value
+    if (body.poCreated && body.poValue && body.poValue > 0) {
+      body.prValue = body.poValue
+    }
     
     // Create new purchase requisition
     const purchaseRequisition = new PurchaseRequisition(body)

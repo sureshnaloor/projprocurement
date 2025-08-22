@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongoose'
 import PurchaseRequisition from '@/lib/models/PurchaseRequisition'
+import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 
 // GET - Fetch a specific purchase requisition
@@ -56,6 +57,16 @@ export async function PUT(
     }
     
     const body = await request.json()
+    
+    // Convert budgetedValueId to ObjectId if provided
+    if (body.budgetedValueId) {
+      body.budgetedValueId = new ObjectId(body.budgetedValueId)
+    }
+    
+    // Business rule: When PO is created, PR value should equal PO value
+    if (body.poCreated && body.poValue && body.poValue > 0) {
+      body.prValue = body.poValue
+    }
     
     const purchaseRequisition = await PurchaseRequisition.findByIdAndUpdate(
       params.id,

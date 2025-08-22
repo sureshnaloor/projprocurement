@@ -27,18 +27,17 @@ interface PurchaseRequisition {
   projectName: string
   projectWbs: string
   materialServiceWbs: string
+  materialService: string
   budget: number
   prNumber: string
   lineItemNumber: string
-  prMaterialServiceCode: string
-  prMaterialServiceDescription: string
-  quantity: number
-  unitOfMeasure: string
-  materialServiceValueSar: number
-  prConvertedToPo: boolean
+  prDate: string
+  prValue: number
   poNumber?: string
-  poLineItem?: string
-  poDelivered: boolean
+  poDate?: string
+  poValue?: number
+  poCompleted: boolean
+  poCreated: boolean
   remarks?: string
   communication: Array<{
     user: string
@@ -100,10 +99,10 @@ export default function PRDetails({ isOpen, onClose, pr, onUpdate }: PRDetailsPr
   }
 
   const getStatusBadge = () => {
-    if (pr.poDelivered) {
-      return <Badge variant="success">Delivered</Badge>
+    if (pr.poCompleted) {
+      return <Badge variant="success">Completed</Badge>
     }
-    if (pr.prConvertedToPo) {
+    if (pr.poCreated) {
       return <Badge variant="default">PO Created</Badge>
     }
     return <Badge variant="warning">Pending</Badge>
@@ -163,20 +162,16 @@ export default function PRDetails({ isOpen, onClose, pr, onUpdate }: PRDetailsPr
                 <p className="text-sm">{pr.lineItemNumber}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Material/Service Code</label>
-                <p className="text-sm">{pr.prMaterialServiceCode}</p>
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-sm font-medium text-muted-foreground">Description</label>
-                <p className="text-sm">{pr.prMaterialServiceDescription}</p>
+                <label className="text-sm font-medium text-muted-foreground">PR Date</label>
+                <p className="text-sm">{pr.prDate}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Quantity</label>
-                <p className="text-sm">{pr.quantity} {pr.unitOfMeasure}</p>
+                <label className="text-sm font-medium text-muted-foreground">Material/Service</label>
+                <p className="text-sm">{pr.materialService}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Value (SAR)</label>
-                <p className="text-sm">{pr.materialServiceValueSar.toLocaleString()}</p>
+                <label className="text-sm font-medium text-muted-foreground">PR Value (SAR)</label>
+                <p className="text-sm">{pr.prValue.toLocaleString()}</p>
               </div>
             </CardContent>
           </Card>
@@ -188,20 +183,24 @@ export default function PRDetails({ isOpen, onClose, pr, onUpdate }: PRDetailsPr
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">PR Converted to PO</label>
-                <p className="text-sm">{pr.prConvertedToPo ? 'Yes' : 'No'}</p>
+                <label className="text-sm font-medium text-muted-foreground">PO Created</label>
+                <p className="text-sm">{pr.poCreated ? 'Yes' : 'No'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">PO Delivered</label>
-                <p className="text-sm">{pr.poDelivered ? 'Yes' : 'No'}</p>
+                <label className="text-sm font-medium text-muted-foreground">PO Completed</label>
+                <p className="text-sm">{pr.poCompleted ? 'Yes' : 'No'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">PO Number</label>
                 <p className="text-sm">{pr.poNumber || 'Not assigned'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">PO Line Item</label>
-                <p className="text-sm">{pr.poLineItem || 'Not assigned'}</p>
+                <label className="text-sm font-medium text-muted-foreground">PO Date</label>
+                <p className="text-sm">{pr.poDate || 'Not assigned'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">PO Value (SAR)</label>
+                <p className="text-sm">{pr.poValue ? pr.poValue.toLocaleString() : 'Not assigned'}</p>
               </div>
             </CardContent>
           </Card>

@@ -16,9 +16,15 @@ const CommunicationLogSchema = new mongoose.Schema({
   }
 })
 
-// Purchase Requisition schema
+// Purchase Requisition schema - Clean version with only required fields
 const PurchaseRequisitionSchema = new mongoose.Schema({
-  // Project information
+  // Reference to budgeted value
+  budgetedValueId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'BudgetedValue',
+    required: true
+  },
+  // Project information (from budgeted value)
   projectName: {
     type: String,
     required: true
@@ -27,9 +33,11 @@ const PurchaseRequisitionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  
-  // Material/Service information
   materialServiceWbs: {
+    type: String,
+    required: true
+  },
+  materialService: {
     type: String,
     required: true
   },
@@ -39,7 +47,7 @@ const PurchaseRequisitionSchema = new mongoose.Schema({
     min: 0
   },
   
-  // PR information
+  // PR information (user input)
   prNumber: {
     type: String,
     required: true
@@ -48,45 +56,37 @@ const PurchaseRequisitionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  prMaterialServiceCode: {
+  prDate: {
     type: String,
     required: true
   },
-  prMaterialServiceDescription: {
-    type: String,
-    required: true
-  },
-  
-  // Quantity and measure
-  quantity: {
+  prValue: {
     type: Number,
     required: true,
     min: 0
   },
-  unitOfMeasure: {
-    type: String,
-    required: true
-  },
   
-  // PO information
-  prConvertedToPo: {
-    type: Boolean,
-    default: false
-  },
+  // PO information (optional)
   poNumber: {
     type: String,
     default: null
   },
-  poLineItem: {
+  poDate: {
     type: String,
     default: null
   },
-  
-  // Financial
-  materialServiceValueSar: {
+  poValue: {
     type: Number,
-    required: true,
+    default: null,
     min: 0
+  },
+  poCompleted: {
+    type: Boolean,
+    default: false
+  },
+  poCreated: {
+    type: Boolean,
+    default: false
   },
   
   // Additional information
@@ -95,12 +95,6 @@ const PurchaseRequisitionSchema = new mongoose.Schema({
     default: ""
   },
   communication: [CommunicationLogSchema],
-  
-  // Delivery status
-  poDelivered: {
-    type: Boolean,
-    default: false
-  },
   
   // Timestamps
   createdAt: {
@@ -119,6 +113,6 @@ PurchaseRequisitionSchema.pre('save', function(next) {
   next()
 })
 
-// Export the model
-export default mongoose.models.PurchaseRequisition || 
-  mongoose.model('PurchaseRequisition', PurchaseRequisitionSchema)
+// Export the model - Force refresh by using a different name temporarily
+export default mongoose.models.PurchaseRequisitionV2 || 
+  mongoose.model('PurchaseRequisitionV2', PurchaseRequisitionSchema, 'purchaserequisitions_v2')

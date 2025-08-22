@@ -44,18 +44,17 @@ interface PurchaseRequisition {
   projectName: string
   projectWbs: string
   materialServiceWbs: string
+  materialService: string
   budget: number
   prNumber: string
   lineItemNumber: string
-  prMaterialServiceCode: string
-  prMaterialServiceDescription: string
-  quantity: number
-  unitOfMeasure: string
-  materialServiceValueSar: number
-  prConvertedToPo: boolean
+  prDate: string
+  prValue: number
   poNumber?: string
-  poLineItem?: string
-  poDelivered: boolean
+  poDate?: string
+  poValue?: number
+  poCompleted: boolean
+  poCreated: boolean
   remarks?: string
   communication: Array<{
     user: string
@@ -158,10 +157,10 @@ export default function PRList() {
   }
 
   const getStatusBadge = (pr: PurchaseRequisition) => {
-    if (pr.poDelivered) {
-      return <Badge variant="success">Delivered</Badge>
+    if (pr.poCompleted) {
+      return <Badge variant="success">Completed</Badge>
     }
-    if (pr.prConvertedToPo) {
+    if (pr.poCreated) {
       return <Badge variant="default">PO Created</Badge>
     }
     return <Badge variant="warning">Pending</Badge>
@@ -170,7 +169,7 @@ export default function PRList() {
   const filteredPRs = prs.filter(pr => 
     pr.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     pr.prNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pr.prMaterialServiceDescription.toLowerCase().includes(searchTerm.toLowerCase())
+    pr.materialService.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (
@@ -217,8 +216,7 @@ export default function PRList() {
                     <TableHead>PR Number</TableHead>
                     <TableHead>Project</TableHead>
                     <TableHead>Material/Service</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Value (SAR)</TableHead>
+                    <TableHead>PR Value (SAR)</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="w-[100px]">Actions</TableHead>
@@ -227,7 +225,7 @@ export default function PRList() {
                 <TableBody>
                   {filteredPRs.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
+                      <TableCell colSpan={7} className="text-center py-8">
                         No purchase requisitions found
                       </TableCell>
                     </TableRow>
@@ -247,19 +245,14 @@ export default function PRList() {
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{pr.prMaterialServiceCode}</div>
+                            <div className="font-medium">{pr.materialService}</div>
                             <div className="text-sm text-muted-foreground">
-                              {pr.prMaterialServiceDescription.length > 50
-                                ? `${pr.prMaterialServiceDescription.substring(0, 50)}...`
-                                : pr.prMaterialServiceDescription}
+                              {pr.materialServiceWbs}
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          {pr.quantity} {pr.unitOfMeasure}
-                        </TableCell>
-                        <TableCell>
-                          {pr.materialServiceValueSar.toLocaleString()}
+                          {pr.prValue.toLocaleString()}
                         </TableCell>
                         <TableCell>{getStatusBadge(pr)}</TableCell>
                         <TableCell>

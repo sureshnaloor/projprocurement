@@ -16,46 +16,50 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Autocomplete } from '@/components/ui/autocomplete'
-import { PrefixInput } from '@/components/ui/prefix-input'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
 
 // Validation schema
 const prFormSchema = z.object({
+  budgetedValueId: z.string().optional().or(z.any()),
   projectName: z.string().min(1, 'Project name is required'),
   projectWbs: z.string().min(1, 'Project WBS is required'),
   materialServiceWbs: z.string().min(1, 'Material/Service WBS is required'),
+  materialService: z.string().min(1, 'Material/Service is required'),
   budget: z.number().min(0, 'Budget must be positive'),
   prNumber: z.string().min(1, 'PR number is required'),
   lineItemNumber: z.string().min(1, 'Line item number is required'),
-  prMaterialServiceCode: z.string().min(1, 'Material/Service code is required'),
-  prMaterialServiceDescription: z.string().min(1, 'Description is required'),
-  quantity: z.number().min(0, 'Quantity must be positive'),
-  unitOfMeasure: z.string().min(1, 'Unit of measure is required'),
-  materialServiceValueSar: z.number().min(0, 'Value must be positive'),
-  prConvertedToPo: z.boolean().default(false),
+  prDate: z.string().min(1, 'PR date is required'),
+  prValue: z.number().min(0, 'PR value must be positive'),
   poNumber: z.string().optional(),
-  poLineItem: z.string().optional(),
-  poDelivered: z.boolean().default(false),
+  poDate: z.string().optional(),
+  poValue: z.number().min(0, 'PO value must be positive').optional(),
+  poCompleted: z.boolean().default(false),
+  poCreated: z.boolean().default(false),
   remarks: z.string().optional(),
 }).refine((data) => {
-  // If PR is converted to PO, PO number and line item are required
-  if (data.prConvertedToPo) {
-    return data.poNumber && data.poNumber.trim().length > 0 && 
-           data.poLineItem && data.poLineItem.trim().length > 0
+  // If any PO field is filled, all PO fields are required
+  const hasAnyPOField = data.poNumber?.trim() || data.poDate?.trim() || (data.poValue && data.poValue > 0)
+  if (hasAnyPOField) {
+    return data.poNumber?.trim() && data.poDate?.trim() && data.poValue && data.poValue > 0
   }
   return true
 }, {
-  message: "PO Number and PO Line Item are required when PR is converted to PO",
-  path: ["poNumber"] // This will show the error on the PO Number field
+  message: "All PO fields (Number, Date, Value) are required when any PO field is filled",
+  path: ["poNumber"]
+}).refine((data) => {
+  // When PO is created, PR value should equal PO value
+  if (data.poCreated && data.poValue && data.poValue > 0) {
+    return data.prValue === data.poValue
+  }
+  return true
+}, {
+  message: "PR Value must equal PO Value when PO is created",
+  path: ["prValue"]
 })
 
 type PRFormData = z.infer<typeof prFormSchema>
@@ -67,6 +71,7 @@ interface PRFormProps {
   initialData?: Partial<PRFormData>
   isEditing?: boolean
   prId?: string
+  budgetedValueId?: string
 }
 
 export default function PRForm({
@@ -75,85 +80,122 @@ export default function PRForm({
   onSuccess,
   initialData,
   isEditing = false,
-  prId
+  prId,
+  budgetedValueId
 }: PRFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
 
-  // Handle cross-population when project or WBS is selected
-  const handleProjectSelection = (option: any) => {
-    if (option.wbs) {
-      form.setValue('projectWbs', option.wbs)
-      // Auto-prefix material/service WBS with first 12 characters of project WBS
-      const prefix = option.wbs.substring(0, 12)
-      const currentMaterialWbs = form.getValues('materialServiceWbs')
-      if (!currentMaterialWbs || currentMaterialWbs.length < 12) {
-        form.setValue('materialServiceWbs', prefix)
-      }
-    }
-  }
-
-  const handleWbsSelection = (option: any) => {
-    if (option.projectName) {
-      form.setValue('projectName', option.projectName)
-    }
-    // Auto-prefix material/service WBS with first 12 characters of selected WBS
-    const prefix = option.value.substring(0, 12)
-    const currentMaterialWbs = form.getValues('materialServiceWbs')
-    if (!currentMaterialWbs || currentMaterialWbs.length < 12) {
-      form.setValue('materialServiceWbs', prefix)
-    }
-  }
-
   const form = useForm<PRFormData>({
     resolver: zodResolver(prFormSchema),
     defaultValues: {
+      budgetedValueId: initialData?.budgetedValueId || budgetedValueId || '',
       projectName: initialData?.projectName || '',
       projectWbs: initialData?.projectWbs || '',
       materialServiceWbs: initialData?.materialServiceWbs || '',
+      materialService: initialData?.materialService || '',
       budget: initialData?.budget || 0,
       prNumber: initialData?.prNumber || '',
       lineItemNumber: initialData?.lineItemNumber || '',
-      prMaterialServiceCode: initialData?.prMaterialServiceCode || '',
-      prMaterialServiceDescription: initialData?.prMaterialServiceDescription || '',
-      quantity: initialData?.quantity || 0,
-      unitOfMeasure: initialData?.unitOfMeasure || '',
-      materialServiceValueSar: initialData?.materialServiceValueSar || 0,
-      prConvertedToPo: initialData?.prConvertedToPo || false,
+      prDate: initialData?.prDate || '',
+      prValue: initialData?.prValue || 0,
       poNumber: initialData?.poNumber || '',
-      poLineItem: initialData?.poLineItem || '',
-      poDelivered: initialData?.poDelivered || false,
+      poDate: initialData?.poDate || '',
+      poValue: initialData?.poValue,
+      poCompleted: initialData?.poCompleted || false,
+      poCreated: initialData?.poCreated || false,
       remarks: initialData?.remarks || '',
     },
   })
 
-  // Reset form when modal opens/closes (only for new PRs, not editing)
+  // Watch PO fields to auto-update PR value and PO Created status
+  const poCreated = form.watch('poCreated')
+  const poValue = form.watch('poValue')
+  const poNumber = form.watch('poNumber')
+  const poDate = form.watch('poDate')
+
+  // Auto-update PR value when PO is created and PO value changes
   useEffect(() => {
-    if (isOpen && !isEditing) {
-      // Reset form to default values when opening for new PR
+    if (poCreated && poValue && poValue > 0) {
+      form.setValue('prValue', poValue)
+    }
+  }, [poCreated, poValue, form])
+
+  // Auto-check/uncheck PO Created based on whether all PO fields are filled
+  useEffect(() => {
+    const allPOFieldsFilled = poNumber?.trim() && poDate?.trim() && poValue && poValue > 0
+    const currentPoCreated = form.getValues('poCreated')
+    
+    if (allPOFieldsFilled && !currentPoCreated) {
+      form.setValue('poCreated', true)
+    } else if (!allPOFieldsFilled && currentPoCreated) {
+      form.setValue('poCreated', false)
+    }
+  }, [poNumber, poDate, poValue, form])
+
+  // Load budgeted value data if budgetedValueId is provided
+  useEffect(() => {
+    if (budgetedValueId && isOpen && !isEditing) {
+      fetchBudgetedValue(budgetedValueId)
+    }
+  }, [budgetedValueId, isOpen, isEditing])
+
+  const fetchBudgetedValue = async (id: string) => {
+    try {
+      const response = await fetch(`/api/budgeted-values/${id}`)
+      if (response.ok) {
+        const data = await response.json()
+        form.reset({
+          budgetedValueId: id,
+          projectName: data.projectName,
+          projectWbs: data.projectWbs,
+          materialServiceWbs: data.materialServiceWbs,
+          materialService: data.materialService,
+          budget: data.budgetedValue,
+          prNumber: '',
+          lineItemNumber: '',
+          prDate: '',
+          prValue: 0,
+          poNumber: '',
+          poDate: '',
+          poValue: 0,
+          poCompleted: false,
+          poCreated: false,
+          remarks: '',
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching budgeted value:', error)
+    }
+  }
+
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen && !isEditing && !budgetedValueId) {
+      // Reset form to default values when opening for new PR (without budgeted value)
       form.reset({
+        budgetedValueId: '',
         projectName: '',
         projectWbs: '',
         materialServiceWbs: '',
+        materialService: '',
         budget: 0,
         prNumber: '',
         lineItemNumber: '',
-        prMaterialServiceCode: '',
-        prMaterialServiceDescription: '',
-        quantity: 0,
-        unitOfMeasure: '',
-        materialServiceValueSar: 0,
-        prConvertedToPo: false,
+        prDate: '',
+        prValue: 0,
         poNumber: '',
-        poLineItem: '',
-        poDelivered: false,
+        poDate: '',
+        poValue: 0,
+        poCompleted: false,
+        poCreated: false,
         remarks: '',
       })
     } else if (isOpen && isEditing && initialData) {
-      // Set form data for editing
+      // Set form data for editing - this takes priority
       form.reset(initialData)
     }
-  }, [isOpen, form, isEditing, initialData])
+  }, [isOpen, form, isEditing, initialData, budgetedValueId])
 
   const onSubmit = async (data: PRFormData) => {
     setIsSubmitting(true)
@@ -196,13 +238,12 @@ export default function PRForm({
   }
 
   return (
-         <Dialog open={isOpen} onOpenChange={onClose}>
-       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Project Information */}
+              {/* Project Information (Read-only from budgeted value) */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Project Information</h3>
                 
@@ -213,14 +254,7 @@ export default function PRForm({
                     <FormItem>
                       <FormLabel>Project Name</FormLabel>
                       <FormControl>
-                        <Autocomplete
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          placeholder="Search and select project name"
-                          type="project"
-                          disabled={isSubmitting}
-                          onSelectionChange={handleProjectSelection}
-                        />
+                        <Input {...field} readOnly />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -234,14 +268,7 @@ export default function PRForm({
                     <FormItem>
                       <FormLabel>Project WBS</FormLabel>
                       <FormControl>
-                        <Autocomplete
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          placeholder="Search and select project WBS"
-                          type="wbs"
-                          disabled={isSubmitting}
-                          onSelectionChange={handleWbsSelection}
-                        />
+                        <Input {...field} readOnly />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -251,25 +278,29 @@ export default function PRForm({
                 <FormField
                   control={form.control}
                   name="materialServiceWbs"
-                  render={({ field }) => {
-                    const projectWbs = form.getValues('projectWbs')
-                    const prefix = projectWbs ? projectWbs.substring(0, 12) : ''
-                    
-                    return (
-                      <FormItem>
-                        <FormLabel>Material/Service WBS</FormLabel>
-                        <FormControl>
-                                                     <PrefixInput
-                             value={field.value}
-                             onChange={field.onChange}
-                             prefix={prefix}
-                             disabled={isSubmitting}
-                           />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )
-                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Material/Service WBS</FormLabel>
+                      <FormControl>
+                        <Input {...field} readOnly />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="materialService"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Material/Service</FormLabel>
+                      <FormControl>
+                        <Input {...field} readOnly />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 <FormField
@@ -281,8 +312,8 @@ export default function PRForm({
                       <FormControl>
                         <Input 
                           type="number" 
-                          placeholder="Enter budget amount"
                           {...field}
+                          readOnly
                           onChange={(e) => field.onChange(Number(e.target.value))}
                         />
                       </FormControl>
@@ -296,180 +327,14 @@ export default function PRForm({
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">PR Information</h3>
                 
-                <FormField
-                  control={form.control}
-                  name="prNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>PR Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter PR number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="lineItemNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Line Item Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter line item number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="prMaterialServiceCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Material/Service Code</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter material/service code" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="prMaterialServiceDescription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Material/Service Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Enter description"
-                          className="min-h-20"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Quantity</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="Enter quantity"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="unitOfMeasure"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Unit of Measure</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., KG, PCS, M" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="materialServiceValueSar"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Value (SAR)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="Enter value"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* PO Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">PO Information</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="prConvertedToPo"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>PR Converted to PO</FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="poDelivered"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>PO Delivered</FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                  <FormField
                    control={form.control}
-                   name="poNumber"
+                   name="prNumber"
                    render={({ field }) => (
                      <FormItem>
-                       <FormLabel>
-                         PO Number
-                         {form.watch('prConvertedToPo') && <span className="text-red-500 ml-1">*</span>}
-                       </FormLabel>
+                       <FormLabel>PR Number</FormLabel>
                        <FormControl>
-                         <Input 
-                           placeholder="Enter PO number" 
-                           {...field} 
-                           className={form.watch('prConvertedToPo') ? 'border-red-200 focus:border-red-500' : ''}
-                         />
+                         <Input placeholder="Enter PR number" {...field} />
                        </FormControl>
                        <FormMessage />
                      </FormItem>
@@ -478,26 +343,162 @@ export default function PRForm({
 
                  <FormField
                    control={form.control}
-                   name="poLineItem"
+                   name="lineItemNumber"
                    render={({ field }) => (
                      <FormItem>
-                       <FormLabel>
-                         PO Line Item
-                         {form.watch('prConvertedToPo') && <span className="text-red-500 ml-1">*</span>}
+                       <FormLabel>Line Item Number</FormLabel>
+                       <FormControl>
+                         <Input placeholder="Enter line item number" {...field} />
+                       </FormControl>
+                       <FormMessage />
+                     </FormItem>
+                   )}
+                 />
+
+                 <FormField
+                   control={form.control}
+                   name="prDate"
+                   render={({ field }) => (
+                     <FormItem>
+                       <FormLabel>PR Date</FormLabel>
+                       <FormControl>
+                         <Input type="date" {...field} />
+                       </FormControl>
+                       <FormMessage />
+                     </FormItem>
+                   )}
+                 />
+
+                 <FormField
+                   control={form.control}
+                   name="prValue"
+                   render={({ field }) => (
+                     <FormItem>
+                       <FormLabel>PR Value (SAR)</FormLabel>
+                       <FormControl>
+                         <Input 
+                           type="number" 
+                           placeholder="Enter PR value"
+                           {...field}
+                           onChange={(e) => field.onChange(Number(e.target.value))}
+                           disabled={poCreated && poValue && poValue > 0}
+                         />
+                       </FormControl>
+                       <FormMessage />
+                       {poCreated && poValue && poValue > 0 && (
+                         <p className="text-sm text-muted-foreground">
+                           PR Value automatically set to PO Value when PO is created
+                         </p>
+                       )}
+                     </FormItem>
+                   )}
+                 />
+              </div>
+            </div>
+
+                         {/* PO Information */}
+             <div className="space-y-4">
+               <h3 className="text-lg font-semibold">PO Information (Optional)</h3>
+               
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <FormField
+                   control={form.control}
+                   name="poNumber"
+                   render={({ field }) => (
+                     <FormItem>
+                       <FormLabel className={poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "text-red-600" : ""}>
+                         PO Number {poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "*" : ""}
+                       </FormLabel>
+                       <FormControl>
+                         <Input placeholder="Enter PO number" {...field} />
+                       </FormControl>
+                       <FormMessage />
+                     </FormItem>
+                   )}
+                 />
+
+                 <FormField
+                   control={form.control}
+                   name="poDate"
+                   render={({ field }) => (
+                     <FormItem>
+                       <FormLabel className={poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "text-red-600" : ""}>
+                         PO Date {poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "*" : ""}
+                       </FormLabel>
+                       <FormControl>
+                         <Input type="date" {...field} />
+                       </FormControl>
+                       <FormMessage />
+                     </FormItem>
+                   )}
+                 />
+
+                 <FormField
+                   control={form.control}
+                   name="poValue"
+                   render={({ field }) => (
+                     <FormItem>
+                       <FormLabel className={poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "text-red-600" : ""}>
+                         PO Value (SAR) {poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "*" : ""}
                        </FormLabel>
                        <FormControl>
                          <Input 
-                           placeholder="Enter PO line item" 
-                           {...field} 
-                           className={form.watch('prConvertedToPo') ? 'border-red-200 focus:border-red-500' : ''}
+                           type="number" 
+                           placeholder="Enter PO value"
+                           {...field}
+                           onChange={(e) => field.onChange(Number(e.target.value))}
                          />
                        </FormControl>
                        <FormMessage />
                      </FormItem>
                    )}
                  />
-              </div>
-            </div>
+               </div>
+
+                               <div className="flex gap-6">
+                  <FormField
+                    control={form.control}
+                    name="poCreated"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked)
+                              // Auto-update PR value when PO Created is checked
+                              if (checked && poValue && poValue > 0) {
+                                form.setValue('prValue', poValue)
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>PO Created (Auto-checked when all PO fields are filled)</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="poCompleted"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>PO Completed</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+             </div>
 
             {/* Remarks */}
             <FormField
