@@ -12,7 +12,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
     const client = await clientPromise
-    const db = client.db('procureflow')
+    const db = client.db(process.env.MONGODB_DB_NAME)
     const collection = db.collection('budgetedval')
 
     const budgetedValue = await collection.findOne({
@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const { id } = await params
     const body = await request.json()
     const client = await clientPromise
-    const db = client.db('procureflow')
+    const db = client.db(process.env.MONGODB_DB_NAME)
     const collection = db.collection('budgetedval')
 
     // Add updated timestamp
@@ -79,7 +79,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
     const client = await clientPromise
-    const db = client.db('procureflow')
+    const db = client.db(process.env.MONGODB_DB_NAME)
     const collection = db.collection('budgetedval')
 
     const result = await collection.deleteOne({

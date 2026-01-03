@@ -4,7 +4,7 @@ import clientPromise from '@/lib/mongodb'
 export async function GET() {
   try {
     const client = await clientPromise
-    const db = client.db('procureflow')
+    const db = client.db(process.env.MONGODB_DB_NAME)
     const collection = db.collection('budgetedval')
 
     const budgetedValues = await collection.find({}).toArray()
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const client = await clientPromise
-    const db = client.db('procureflow')
+    const db = client.db(process.env.MONGODB_DB_NAME)
     const collection = db.collection('budgetedval')
 
     // Add timestamp
@@ -36,9 +36,9 @@ export async function POST(request: NextRequest) {
     const result = await collection.insertOne(budgetedValue)
 
     return NextResponse.json(
-      { 
+      {
         message: 'Budgeted value created successfully',
-        id: result.insertedId 
+        id: result.insertedId
       },
       { status: 201 }
     )

@@ -30,53 +30,60 @@ const Header = () => {
               <p className="text-sm text-gray-300 font-medium">Project Purchase Management</p>
             </div>
           </div>
-          
+
           {user && (
             <nav className="hidden md:flex items-center space-x-8">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="flex items-center space-x-2 text-gray-300 hover:text-blue-400 transition-all duration-300 hover:scale-105 group"
               >
                 <Home className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
                 <span className="font-medium">Home</span>
               </Link>
-              <Link 
-                href="/dashboard" 
+              <Link
+                href="/dashboard"
                 className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-all duration-300 hover:scale-105 group"
               >
                 <BarChart3 className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
                 <span className="font-medium">Dashboard</span>
               </Link>
-              <Link 
-                href="/purchase-requisitions" 
+              <Link
+                href="/purchase-requisitions"
                 className="flex items-center space-x-2 text-gray-300 hover:text-purple-400 transition-all duration-300 hover:scale-105 group"
               >
                 <FileText className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
                 <span className="font-medium">Purchase Requisitions</span>
               </Link>
-              <Link 
-                href="/budgeted-values" 
+              <Link
+                href="/budgeted-values"
                 className="flex items-center space-x-2 text-gray-300 hover:text-cyan-400 transition-all duration-300 hover:scale-105 group"
               >
                 <Calculator className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
                 <span className="font-medium">Budgeted Values</span>
               </Link>
-              <a 
-                href="#features" 
+              <a
+                href="#features"
                 className="flex items-center space-x-2 text-gray-300 hover:text-orange-400 transition-all duration-300 hover:scale-105 group"
               >
                 <Zap className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
                 <span className="font-medium">Features</span>
               </a>
+              <Link
+                href="/projects"
+                className="flex items-center space-x-2 text-gray-300 hover:text-pink-400 transition-all duration-300 hover:scale-105 group"
+              >
+                <FileText className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="font-medium">Projects</span>
+              </Link>
             </nav>
           )}
 
           <div className="flex items-center space-x-3">
             {user ? (
               <>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="relative text-gray-300 hover:text-yellow-400 hover:bg-gray-700 transition-all duration-300"
                 >
                   <Bell className="h-5 w-5" />
@@ -84,11 +91,11 @@ const Header = () => {
                     3
                   </span>
                 </Button>
-                
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="icon"
                       className="text-gray-300 hover:text-blue-400 hover:bg-gray-700 transition-all duration-300"
                     >
@@ -106,7 +113,7 @@ const Header = () => {
                     <DropdownMenuItem className="text-gray-300 hover:text-blue-400 hover:bg-gray-700 focus:bg-gray-700">
                       Settings
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={logout}
                       className="text-gray-300 hover:text-red-400 hover:bg-gray-700 focus:bg-gray-700"
                     >
@@ -131,9 +138,9 @@ const Header = () => {
               </div>
             )}
 
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="md:hidden text-gray-300 hover:text-blue-400 hover:bg-gray-700 transition-all duration-300"
             >
               <Menu className="h-5 w-5" />

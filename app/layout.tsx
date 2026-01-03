@@ -4,6 +4,8 @@ import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/contexts/AuthContext'
 
+import Providers from '@/components/Providers'
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -19,10 +21,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
+        <Providers>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   )
