@@ -7,19 +7,20 @@ import mongoose from 'mongoose'
 // GET - Fetch a specific purchase requisition
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     await dbConnect()
     
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid purchase requisition ID' },
         { status: 400 }
       )
     }
     
-    const purchaseRequisition = await PurchaseRequisition.findById(params.id)
+    const purchaseRequisition = await PurchaseRequisition.findById(id)
     
     if (!purchaseRequisition) {
       return NextResponse.json(
@@ -44,12 +45,13 @@ export async function GET(
 // PUT - Update a purchase requisition
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     await dbConnect()
     
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid purchase requisition ID' },
         { status: 400 }
@@ -69,7 +71,7 @@ export async function PUT(
     }
     
     const purchaseRequisition = await PurchaseRequisition.findByIdAndUpdate(
-      params.id,
+      id,
       { ...body, updatedAt: new Date() },
       { new: true, runValidators: true }
     )
@@ -97,19 +99,20 @@ export async function PUT(
 // DELETE - Delete a purchase requisition
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     await dbConnect()
     
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid purchase requisition ID' },
         { status: 400 }
       )
     }
     
-    const purchaseRequisition = await PurchaseRequisition.findByIdAndDelete(params.id)
+    const purchaseRequisition = await PurchaseRequisition.findByIdAndDelete(id)
     
     if (!purchaseRequisition) {
       return NextResponse.json(

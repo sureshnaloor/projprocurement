@@ -116,14 +116,14 @@ export default function PRForm({
 
   // Auto-update PR value when PO is created and PO value changes
   useEffect(() => {
-    if (poCreated && poValue && poValue > 0) {
+    if (poCreated && poValue !== undefined && poValue > 0) {
       form.setValue('prValue', poValue)
     }
   }, [poCreated, poValue, form])
 
   // Auto-check/uncheck PO Created based on whether all PO fields are filled
   useEffect(() => {
-    const allPOFieldsFilled = poNumber?.trim() && poDate?.trim() && poValue && poValue > 0
+    const allPOFieldsFilled = poNumber?.trim() && poDate?.trim() && poValue !== undefined && poValue > 0
     const currentPoCreated = form.getValues('poCreated')
     
     if (allPOFieldsFilled && !currentPoCreated) {
@@ -381,11 +381,11 @@ export default function PRForm({
                            placeholder="Enter PR value"
                            {...field}
                            onChange={(e) => field.onChange(Number(e.target.value))}
-                           disabled={poCreated && poValue && poValue > 0}
+                           disabled={poCreated && poValue !== undefined && poValue > 0}
                          />
                        </FormControl>
                        <FormMessage />
-                       {poCreated && poValue && poValue > 0 && (
+                       {poCreated && poValue !== undefined && poValue > 0 && (
                          <p className="text-sm text-muted-foreground">
                            PR Value automatically set to PO Value when PO is created
                          </p>
@@ -406,8 +406,8 @@ export default function PRForm({
                    name="poNumber"
                    render={({ field }) => (
                      <FormItem>
-                       <FormLabel className={poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "text-red-600" : ""}>
-                         PO Number {poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "*" : ""}
+                       <FormLabel className={poNumber?.trim() || poDate?.trim() || (poValue !== undefined && poValue > 0) ? "text-red-600" : ""}>
+                         PO Number {poNumber?.trim() || poDate?.trim() || (poValue !== undefined && poValue > 0) ? "*" : ""}
                        </FormLabel>
                        <FormControl>
                          <Input placeholder="Enter PO number" {...field} />
@@ -422,8 +422,8 @@ export default function PRForm({
                    name="poDate"
                    render={({ field }) => (
                      <FormItem>
-                       <FormLabel className={poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "text-red-600" : ""}>
-                         PO Date {poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "*" : ""}
+                       <FormLabel className={poNumber?.trim() || poDate?.trim() || (poValue !== undefined && poValue > 0) ? "text-red-600" : ""}>
+                         PO Date {poNumber?.trim() || poDate?.trim() || (poValue !== undefined && poValue > 0) ? "*" : ""}
                        </FormLabel>
                        <FormControl>
                          <Input type="date" {...field} />
@@ -438,8 +438,8 @@ export default function PRForm({
                    name="poValue"
                    render={({ field }) => (
                      <FormItem>
-                       <FormLabel className={poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "text-red-600" : ""}>
-                         PO Value (SAR) {poNumber?.trim() || poDate?.trim() || (poValue && poValue > 0) ? "*" : ""}
+                       <FormLabel className={poNumber?.trim() || poDate?.trim() || (poValue !== undefined && poValue > 0) ? "text-red-600" : ""}>
+                         PO Value (SAR) {poNumber?.trim() || poDate?.trim() || (poValue !== undefined && poValue > 0) ? "*" : ""}
                        </FormLabel>
                        <FormControl>
                          <Input 
@@ -467,7 +467,7 @@ export default function PRForm({
                             onCheckedChange={(checked) => {
                               field.onChange(checked)
                               // Auto-update PR value when PO Created is checked
-                              if (checked && poValue && poValue > 0) {
+                              if (checked && poValue !== undefined && poValue > 0) {
                                 form.setValue('prValue', poValue)
                               }
                             }}

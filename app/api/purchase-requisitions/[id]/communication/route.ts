@@ -6,12 +6,13 @@ import mongoose from 'mongoose'
 // POST - Add a communication log to a purchase requisition
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     await dbConnect()
     
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid purchase requisition ID' },
         { status: 400 }
@@ -28,7 +29,7 @@ export async function POST(
     }
     
     const purchaseRequisition = await PurchaseRequisition.findByIdAndUpdate(
-      params.id,
+      id,
       {
         $push: {
           communication: {

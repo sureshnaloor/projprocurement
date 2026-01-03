@@ -3,19 +3,20 @@ import clientPromise from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params
     const client = await clientPromise
     const db = client.db('procureflow')
     const collection = db.collection('budgetedval')
 
     const budgetedValue = await collection.findOne({
-      _id: new ObjectId(params.id)
+      _id: new ObjectId(id)
     })
 
     if (!budgetedValue) {
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params
     const body = await request.json()
     const client = await clientPromise
     const db = client.db('procureflow')
@@ -49,7 +51,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     const result = await collection.updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: updatedBudgetedValue }
     )
 
@@ -75,12 +77,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params
     const client = await clientPromise
     const db = client.db('procureflow')
     const collection = db.collection('budgetedval')
 
     const result = await collection.deleteOne({
-      _id: new ObjectId(params.id)
+      _id: new ObjectId(id)
     })
 
     if (result.deletedCount === 0) {

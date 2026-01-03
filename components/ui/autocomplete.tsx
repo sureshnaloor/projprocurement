@@ -50,7 +50,7 @@ export function Autocomplete({
   const [options, setOptions] = useState<AutocompleteOption[]>([])
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   const searchProjects = async (query: string) => {
     if (query.length < 3) {

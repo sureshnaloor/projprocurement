@@ -13,7 +13,7 @@ A modern procurement management application built with Next.js, designed to stre
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 16 LTS (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **UI Components**: Shadcn/UI
@@ -25,7 +25,7 @@ A modern procurement management application built with Next.js, designed to stre
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 20.9+ (Next.js 16 requirement) 
 - npm or yarn
 
 ### Installation
@@ -44,7 +44,7 @@ npm install
 npm run dev
 ```
 
-The application will be available at `http://localhost:3000`
+The application will be available at `http://localhost:3001` (configured in package.json)
 
 ## Project Structure
 
